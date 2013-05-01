@@ -22,16 +22,17 @@ SmallMults = () ->
 
   # using an ordinal scale for X as our
   # data is categorical (the names of countries)
-  xScale = d3.scale.ordinal()
-    .rangeRoundBands([0, graphWidth], 0.1)
+  # xScale = d3.scale.ordinal()
+  #   .rangeRoundBands([0, graphWidth], 0.1)
+
+  xScale = d3.scale.linear().range([0, graphWidth])
 
   # names will also be used to color the bars
-  colorScale = d3.scale.ordinal()
-    .range(["#ff7f0e", "#1f77b4", "#2ca02c", "#d62728", "#8c564b", "#9467bd"])
+  #colorScale = d3.scale.ordinal()
+  #  .range(["#ff7f0e", "#1f77b4", "#2ca02c", "#d62728", "#8c564b", "#9467bd"])
 
   # yPadding is removed to make room for country names
-  yScale = d3.scale.linear()
-    .range([0, graphHeight - yPadding])
+  yScale = d3.scale.linear().range([0, graphHeight - yPadding])
 
   # This is the amount by which we will enlarge the small chart 
   # when displaying it in detail display
@@ -92,36 +93,46 @@ SmallMults = () ->
     # element which the barchart will
     # live in
     base = d3.select(this)
+		
+		#set up the background
+		
     base.append("rect")
       .attr("width", graphWidth)
       .attr("height", graphHeight)
       .attr("class", "background")
 
-    # create the bars
+    # create the dots for the scatter plot
     graph = base.append("g")
-    graph.selectAll(".bar")
-      .data((d) -> d.values)
-      .enter().append("rect")
-      .attr("x", (d) -> xScale(d.name))
-      .attr("y", (d) -> (graphHeight - yScale(d.value) - yPadding))
-      .attr("width", xScale.rangeBand())
-      .attr("height", (d) ->  yScale(d.value))
-      .attr("fill", (d) -> colorScale(d.name))
-      .on("mouseover", showAnnotation)
-      .on("mouseout", hideAnnotation)
+    graph.selectAll("circle")
+      .data((d) -> d.values) #d now contains exp_ratio, ten_year_return, index
+      .enter().append("circle") # the code below will execute for each attr on circle
+      .attr("cx", (d) -> xScale(d.exp_ratio))
+      .attr("cy", (d) -> (graphHeight - yScale(d.ten_year_return) - yPadding)
+      .attr("r", 10)
+
+    # create the bars
+    # graph = base.append("g")
+    # graph.selectAll(".bar")
+    #   .data((d) -> d.values)
+    #   .enter().append("rect")
+    #   .attr("x", (d) -> xScale(d.name)) #
+    #   .attr("y", (d) -> (graphHeight - yScale(d.value) - yPadding))
+    #   .attr("width", xScale.rangeBand())
+    #   .attr("height", (d) ->  yScale(d.value))
+    #   .attr("fill", (d) -> colorScale(d.name))
+    #   .on("mouseover", showAnnotation)
+    #   .on("mouseout", hideAnnotation)
 
     # add the year title
     graph.append("text")
-      .text((d) -> d.symbol)
+      .text((d) -> d.symbol) #change to d.symbol
       .attr("class", "title")
       .attr("text-anchor", "middle")
       .attr("x", graphWidth / 2)
       .attr("dy", "1.3em")
 
-  # ---
   # This creates the additional text displayed for
   # the detail view.
-  # ---
   drawDetails = (d,i) ->
     # like in 'drawChart', 'this'
     # is the group element to draw
@@ -243,20 +254,20 @@ SmallMults = () ->
   # Serves as example of simple additional interactions
   # in detail view
   # ---
-  showAnnotation = (d) ->
-    graph = d3.select("#detail_view .main")
-    graph.selectAll(".subtitle").remove()
-
-    graph.selectAll(".subtitle")
-      .data([d]).enter()
-      .append("text")
-      .text("#{formatNumber(d.percent_world * 100)}% of Worldwide Emissions")
-      .attr("class", "subtitle")
-      .attr("fill", (d) -> colorScale(d.name))
-      .attr("text-anchor", "middle")
-      .attr("dy", "3.8em")
-      .attr("x", (d) -> graphWidth / 2)
-      .attr("font-size", 8)
+  # showAnnotation = (d) ->
+  #   graph = d3.select("#detail_view .main")
+  #   graph.selectAll(".subtitle").remove()
+  # 
+  #   graph.selectAll(".subtitle")
+  #     .data([d]).enter()
+  #     .append("text")
+  #     .text("#{formatNumber(d.percent_world * 100)}% of Worldwide Emissions")
+  #     .attr("class", "subtitle")
+  #     .attr("fill", (d) -> colorScale(d.name))
+  #     .attr("text-anchor", "middle")
+  #     .attr("dy", "3.8em")
+  #     .attr("x", (d) -> graphWidth / 2)
+  #     .attr("font-size", 8)
 
   # ---
   # remove subtitle
@@ -271,14 +282,23 @@ SmallMults = () ->
   # data.
   # ---
   setScales = () ->
-    yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.value))
+    #yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.value)) #change to e.ten_year_return
+		
+		yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.ten_year_return))
+		
     # this scale is expanded past its max to provide some white space
     # on the top of the bars
-    yScale.domain([0,yMax + 500000])
+    #yScale.domain([0,yMax + 500000]) #change yMax + 500000 to yMax + 5
+		
+		yScale.domain([0,yMax + 5]) #change yMax + 500000 to yMax + 5
 
-    names = data[0].values.map (d) -> d.name
-    xScale.domain(names)
-    colorScale.domain(names)
+		xMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.exp_ratio))
+		
+		xScale.domain([0,xMax + 0.5])
+
+    # names = data[0].values.map (d) -> d.name
+    # xScale.domain(names)
+    # colorScale.domain(names)
 
   # ---
   # Helper function to return the position
@@ -290,27 +310,27 @@ SmallMults = () ->
     pos = $(el).position()
     pos
 
-  createLegend = () ->
-    legend = d3.select("#legend")
-      .append("svg")
-      .attr("width", 100)
-      .attr("height", 300)
-
-    keys = legend.selectAll("g")
-      .data(data[0].values)
-      .enter().append("g")
-      .attr("transform", (d,i) -> "translate(#{0},#{40 * (i + 1)})")
-
-    keys.append("rect")
-      .attr("width", 30)
-      .attr("height", 30)
-      .attr("fill", (d) -> colorScale(d.name))
-
-    keys.append("text")
-      .text((d) -> d.name)
-      .attr("text-anchor", "left")
-      .attr("dx", "2.2em")
-      .attr("dy", "1.2em")
+  # createLegend = () ->
+  #   legend = d3.select("#legend")
+  #     .append("svg")
+  #     .attr("width", 100)
+  #     .attr("height", 300)
+  # 
+  #   keys = legend.selectAll("g")
+  #     .data(data[0].values)
+  #     .enter().append("g")
+  #     .attr("transform", (d,i) -> "translate(#{0},#{40 * (i + 1)})")
+  # 
+  #   keys.append("rect")
+  #     .attr("width", 30)
+  #     .attr("height", 30)
+  #     .attr("fill", (d) -> colorScale(d.name))
+  # 
+  #   keys.append("text")
+  #     .text((d) -> d.name)
+  #     .attr("text-anchor", "left")
+  #     .attr("dx", "2.2em")
+  #     .attr("dy", "1.2em")
 
   return chart
 
@@ -374,7 +394,6 @@ $ ->
   display = (data) ->
     plotData("#vis", data, plot)
 
-  d3.json("data/co2_kt_data.json", display)
-	#d3.json("data/funds.json", display)
+  # d3.json("data/co2_kt_data.json", display)
+  d3.json("data/funds.json", display)
 	
-
