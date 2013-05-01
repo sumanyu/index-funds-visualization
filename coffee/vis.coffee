@@ -47,7 +47,7 @@ SmallMults = () ->
       # store our data and set the scale domains
       data = rawData
       setScales()
-      createLegend()
+      #createLegend()
 
       # bind data to svg elements so there will be a svg for
       # each year
@@ -112,7 +112,7 @@ SmallMults = () ->
 
     # add the year title
     graph.append("text")
-      .text((d) -> d.year)
+      .text((d) -> d.symbol)
       .attr("class", "title")
       .attr("text-anchor", "middle")
       .attr("x", graphWidth / 2)
@@ -375,4 +375,6 @@ $ ->
     plotData("#vis", data, plot)
 
   d3.json("data/co2_kt_data.json", display)
+	#d3.json("data/funds.json", display)
+	
 
