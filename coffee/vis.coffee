@@ -9,14 +9,15 @@ SmallMults = () ->
   
   # size of the svg's that hold the small multiples 
   width = 200
-  height = 160
+  height = 200
   # size of the drawing area inside the svg's to make
   # the bar charts
   graphWidth = 180
-  graphHeight = 140
+  graphHeight = 180
   # padding used underneath the bars to make space
   # for the names of the countries
   yPadding = 12
+  xPadding = 12
   # placeholder for the data
   data = []
 
@@ -25,7 +26,7 @@ SmallMults = () ->
   # xScale = d3.scale.ordinal()
   #   .rangeRoundBands([0, graphWidth], 0.1)
 
-  xScale = d3.scale.linear().range([0, graphWidth])
+  xScale = d3.scale.linear().range([0, graphWidth - xPadding])
 
   # names will also be used to color the bars
   #colorScale = d3.scale.ordinal()
@@ -94,7 +95,7 @@ SmallMults = () ->
     # live in
     base = d3.select(this)
 		
-		#set up the background
+    #set up the background
 		
     base.append("rect")
       .attr("width", graphWidth)
@@ -106,24 +107,13 @@ SmallMults = () ->
     graph.selectAll("circle")
       .data((d) -> d.values) #d now contains exp_ratio, ten_year_return, index
       .enter().append("circle") # the code below will execute for each attr on circle
-      .attr("cx", (d) -> xScale(d.exp_ratio))
-      .attr("cy", (d) -> (graphHeight - yScale(d.ten_year_return) - yPadding)
-      .attr("r", 10)
-
-    # create the bars
-    # graph = base.append("g")
-    # graph.selectAll(".bar")
-    #   .data((d) -> d.values)
-    #   .enter().append("rect")
-    #   .attr("x", (d) -> xScale(d.name)) #
-    #   .attr("y", (d) -> (graphHeight - yScale(d.value) - yPadding))
-    #   .attr("width", xScale.rangeBand())
-    #   .attr("height", (d) ->  yScale(d.value))
-    #   .attr("fill", (d) -> colorScale(d.name))
-    #   .on("mouseover", showAnnotation)
-    #   .on("mouseout", hideAnnotation)
-
-    # add the year title
+      .attr("cx", (d) -> xPadding + xScale(d.exp_ratio))
+      .attr("cy", (d) -> (graphHeight - yScale(d.ten_year_return) - yPadding))
+      .attr("r", 2)
+      .attr("fill", "orange")
+      .attr("stroke", "gray")
+    
+    # add the symbol title
     graph.append("text")
       .text((d) -> d.symbol) #change to d.symbol
       .attr("class", "title")
@@ -284,17 +274,17 @@ SmallMults = () ->
   setScales = () ->
     #yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.value)) #change to e.ten_year_return
 		
-		yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.ten_year_return))
+    yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.ten_year_return))
 		
     # this scale is expanded past its max to provide some white space
     # on the top of the bars
     #yScale.domain([0,yMax + 500000]) #change yMax + 500000 to yMax + 5
 		
-		yScale.domain([0,yMax + 5]) #change yMax + 500000 to yMax + 5
+    yScale.domain([0,yMax + 5]) #change yMax + 500000 to yMax + 5
 
-		xMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.exp_ratio))
+    xMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.exp_ratio))
 		
-		xScale.domain([0,xMax + 0.5])
+    xScale.domain([0,xMax + 0.5])
 
     # names = data[0].values.map (d) -> d.name
     # xScale.domain(names)
