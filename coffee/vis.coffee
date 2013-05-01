@@ -16,24 +16,28 @@ SmallMults = () ->
   graphHeight = 180
   # padding used underneath the bars to make space
   # for the names of the countries
-  yPadding = 12
-  xPadding = 12
+  yPadding = 20
+  xPadding = 20
   # placeholder for the data
   data = []
+  
+  #place holder for x and y maxes
+  xMax = 0
+  yMax = 0
 
   # using an ordinal scale for X as our
   # data is categorical (the names of countries)
   # xScale = d3.scale.ordinal()
   #   .rangeRoundBands([0, graphWidth], 0.1)
 
-  xScale = d3.scale.linear().range([0, graphWidth - xPadding])
+  
 
   # names will also be used to color the bars
   #colorScale = d3.scale.ordinal()
   #  .range(["#ff7f0e", "#1f77b4", "#2ca02c", "#d62728", "#8c564b", "#9467bd"])
 
   # yPadding is removed to make room for country names
-  yScale = d3.scale.linear().range([0, graphHeight - yPadding])
+  
 
   # This is the amount by which we will enlarge the small chart 
   # when displaying it in detail display
@@ -48,7 +52,7 @@ SmallMults = () ->
     selection.each (rawData) ->
       # store our data and set the scale domains
       data = rawData
-      setScales()
+      #setScales()
       #createLegend()
 
       # bind data to svg elements so there will be a svg for
@@ -101,14 +105,26 @@ SmallMults = () ->
       .attr("width", graphWidth)
       .attr("height", graphHeight)
       .attr("class", "background")
+        
+    paddingFactor = 2
+              
+    #set different scale for each graph with padding factors for margins
+    xScale = d3.scale.linear().range([0, graphWidth - xPadding*paddingFactor ])
+    yScale = d3.scale.linear().range([graphHeight - yPadding*paddingFactor, 0])
+    
+    xMax = 0
+    yMax = 0
+    
+    xMax = setXScale(xScale, d)
+    yMax = setYScale(yScale, d)
 
     # create the dots for the scatter plot
     graph = base.append("g")
     graph.selectAll("circle")
       .data((d) -> d.values) #d now contains exp_ratio, ten_year_return, index
       .enter().append("circle") # the code below will execute for each attr on circle
-      .attr("cx", (d) -> xPadding + xScale(d.exp_ratio))
-      .attr("cy", (d) -> (graphHeight - yScale(d.ten_year_return) - yPadding))
+      .attr("cx", (d) -> xScale(d.exp_ratio) + xPadding)
+      .attr("cy", (d) -> yScale(d.ten_year_return) + yPadding)
       .attr("r", 2)
       .attr("fill", "orange")
       .attr("stroke", "gray")
@@ -120,6 +136,35 @@ SmallMults = () ->
       .attr("text-anchor", "middle")
       .attr("x", graphWidth / 2)
       .attr("dy", "1.3em")
+      
+    xValues = []
+    
+    for i in [0..xMax] by .5
+      xValues.push(i)
+      
+    #define xAxis
+    xAxis = d3.svg.axis()
+      .scale(xScale)
+      .orient("bottom")
+      #.ticks(xValues.length) #can only take multiples of 2, 5, 10
+      #.tickValues(xValues)
+      
+    #draw x axis
+    graph.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(" + xPadding + "," + (graphHeight - yPadding) + ")")
+      .call(xAxis)
+      
+    #define yAxis
+    yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left")
+      
+    #draw y axis
+    graph.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(" + xPadding + "," + yPadding + ")")
+      .call(yAxis)
 
   # This creates the additional text displayed for
   # the detail view.
@@ -271,20 +316,25 @@ SmallMults = () ->
   # expects 'data' to be accessible and set to our
   # data.
   # ---
+  
+  setXScale = (xScale, d) ->
+    xMax = d3.max(d.values, (e) -> e.exp_ratio) #takes the max of exp_ratio in the values array
+    console.log(xMax)
+    xOffSet = 0.5
+    xScale.domain([0,xMax + xOffSet])
+    xMax
+  
+  setYScale = (yScale, d) ->
+    yMax = d3.max(d.values, (e) -> e.ten_year_return)
+    console.log(yMax)
+    yOffset = 7
+    yScale.domain([0,yMax + yOffset]) #change yMax + 500000 to yMax + 7
+    yMax
+    
   setScales = () ->
-    #yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.value)) #change to e.ten_year_return
-		
-    yMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.ten_year_return))
-		
     # this scale is expanded past its max to provide some white space
     # on the top of the bars
     #yScale.domain([0,yMax + 500000]) #change yMax + 500000 to yMax + 5
-		
-    yScale.domain([0,yMax + 5]) #change yMax + 500000 to yMax + 5
-
-    xMax = d3.max(data, (d) -> d3.max(d.values, (e) -> e.exp_ratio))
-		
-    xScale.domain([0,xMax + 0.5])
 
     # names = data[0].values.map (d) -> d.name
     # xScale.domain(names)

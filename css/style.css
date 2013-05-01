@@ -107,6 +107,17 @@ h2 {
   overflow: visible;
 }
 
+.axis path, .axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+	font-family: sans-serif;
+	font-size: 7px;
+}
+
 footer {
   background-color: white;
   padding-top: 5px;
