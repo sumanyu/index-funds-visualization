@@ -131,11 +131,12 @@ SmallMults = () ->
     
     # add the symbol title
     graph.append("text")
-      .text((d) -> d.symbol) #change to d.symbol
+      .text((d) -> d.symbol)
       .attr("class", "title")
       .attr("text-anchor", "middle")
       .attr("x", graphWidth / 2)
-      .attr("dy", "1.3em")
+      .attr("dy", "2.0em")
+      .attr("font-size", "10px")
       
     xValues = []
     
@@ -152,7 +153,7 @@ SmallMults = () ->
     #draw x axis
     graph.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(" + xPadding + "," + (graphHeight - yPadding) + ")")
+      .attr("transform", "translate(" + xPadding + "," + (graphHeight - yPadding) + ")") #remember where 0,0 is
       .call(xAxis)
       
     #define yAxis
@@ -226,7 +227,7 @@ SmallMults = () ->
     main.each(drawChart)
 
     # add details specific to the detail view
-    main.each(drawDetails)
+    #main.each(drawDetails)
 
     # setup click handler to hide detail view once
     # graph or detail panel is clicked
@@ -321,14 +322,14 @@ SmallMults = () ->
     xMax = d3.max(d.values, (e) -> e.exp_ratio) #takes the max of exp_ratio in the values array
     console.log(xMax)
     xOffSet = 0.5
-    xScale.domain([0,xMax + xOffSet])
+    xScale.domain([0, Math.ceil(xMax + xOffSet)])
     xMax
   
   setYScale = (yScale, d) ->
     yMax = d3.max(d.values, (e) -> e.ten_year_return)
     console.log(yMax)
-    yOffset = 7
-    yScale.domain([0,yMax + yOffset]) #change yMax + 500000 to yMax + 7
+    yOffset = 6
+    yScale.domain([0, Math.ceil(yMax + yOffset)]) #change yMax + 500000 to yMax + 7
     yMax
     
   setScales = () ->
